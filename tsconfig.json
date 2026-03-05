@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    /* Setări de bază pentru Node.js cu ES Modules */
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    
+    /* Interoperabilitate (te ajută să imporți pachete vechi în noul sistem) */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    /* Setări de strictețe (te ajută să scrii cod sigur) */
+    "strict": true,
+    "skipLibCheck": true,
+    
+    /* Organizarea fișierelor (opțional, dar foarte recomandat) */
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
