@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
 import pool from '../db.js'
 import jwt from 'jsonwebtoken'
+import { AuthRequest } from "../middleware/authMiddleware.js";
 
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
     const {name, email, password, role} = req.body
@@ -74,6 +75,30 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         })
     }catch (error){
         console.error('Eroare la logare:', error);
+        res.status(500).json({ error: 'Eroare internă a serverului.' });
+    }
+}
+
+
+export const getUserProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+
+    try{
+    const userId = req.user.userId
+
+    const query = `SELECT id,name,email,role,created_at FROM users WHERE id = $1`
+    const result = await pool.query(query, [userId])
+
+    if(result.rows.length === 0) {
+        res.status(404).json({ error: 'Utilizatorul nu a fost gasit.' })
+        return
+    }
+
+    res.status(200).json({
+        message: 'Ai accesat o ruta protejata',
+        user: result.rows[0]
+    })
+    }catch (error) {
+        console.error('Eroare la obținerea profilului:', error);
         res.status(500).json({ error: 'Eroare internă a serverului.' });
     }
 }
