@@ -1,13 +1,13 @@
 import express from 'express'
-import { createTask, getTaskByProject } from '../controllers/taskController.js'
+import { createTask, getProjectTasks, updateTaskStatus } from '../controllers/taskController.js'
 import { protectRoute } from '../middleware/authMiddleware.js'
 
-const router = express.Router()
+const router = express.Router({ mergeParams: true})
 
 router.use(protectRoute)
 
-router.post('/',createTask)
-
-router.get('/project/:projectId',getTaskByProject)
+router.get('/', getProjectTasks)
+router.post('/', createTask)
+router.patch('/:taskId', updateTaskStatus)
 
 export default router

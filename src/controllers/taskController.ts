@@ -1,63 +1,63 @@
-import { Response } from "express";
+import { Response, Request } from 'express'
 import pool from '../db.js'
-import { AuthRequest } from "../middleware/authMiddleware.js";
-import { promises } from "dns";
 
-export const createTask = async (req: AuthRequest, res: Response): Promise<void> => {
-
-    const {title, description, project_id, assigned_to, status, priority} = req.body
-
+export const getProjectTasks = async (req: Request, res: Response) => {
     try {
-        const insertQuery = `
-            INSERT INTO tasks (title,description,project_id,assigned_to,status,priority)
-            VALUES ($1,$2,$3,$4,$5,$6)
-            RETURNING *;
-        
-        `;
+        const { projectId } = req.params;
 
-        const values = [
-            title,
-            description,
-            project_id,
-            assigned_to || null,
-            status || 'TODO',
-            priority || 'MEDIUM'
+        const result = await pool.query(
+            'SELECT * FROM tasks WHERE project_id = $1 ORDER BY created_at DESC',
+            [projectId]
+        );
 
-        ];
-
-        const result = await pool.query(insertQuery,values)
-
-        res.status(201).json({
-            message: 'Task creat cu succes!',
-            task: result.rows[0]
-        })
-    }catch(error) {
-        console.error('Eroare la crearea task-ului:', error);
-        res.status(500).json({ error: 'Eroare internă a serverului.' });
+        res.status(200).json({ tasks: result.rows });
+    } catch (error) {
+        console.error('Eroare la aducerea task-urilor:', error);
+        res.status(500).json({ error: 'A apărut o eroare la încărcarea task-urilor.' });
     }
-
-
 }
 
 
-export const getTaskByProject = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createTask = async (req: Request, res: Response) => {
+    try {
+        const { projectId } = req.params;
+        const { title, description, priority, assigned_to } = req.body;
 
-    const projectId = req.params.projectId
+        const taskPriority = priority || 'MEDIUM';
+        const taskAssignedTo = assigned_to || null;
 
-    try{
-        const selectQuery = `
-            SELECT * FROM tasks
-            WHERE project_id = $1
-            ORDER BY created_at DESC;
-        
-        `;
-        const result = await pool.query(selectQuery,[projectId])
+        const result = await pool.query(
+            `INSERT INTO tasks (title, description, status, project_id, priority, assigned_to)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+             [title, description, 'TODO', projectId, taskPriority, taskAssignedTo]
+        );
 
-        res.status(200).json({
-            tasks: result.rows
-        })
-    }catch (error) {
-        console.error('Eroare la obținerea task-urilor:', error);
-        res.status(500).json({ error: 'Eroare internă a serverului.' });
+        res.status(201).json({ task: result.rows[0] });
+    } catch (error) {
+        console.error('Eroare la crearea task-ului:', error);
+        res.status(500).json({ error: 'A apărut o eroare la salvarea task-ului.' });
+    }
+}
+
+
+export const updateTaskStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { projectId, taskId } = req.params;
+        const { status } = req.body;
+
+        const result = await pool.query(
+            'UPDATE tasks SET status = $1 WHERE id = $2 AND project_id = $3 RETURNING *',
+            [status, taskId, projectId]
+        );
+
+        if (result.rowCount === 0) {
+            res.status(404).json({ error: 'Task-ul nu a fost găsit' });
+            return;
+        }
+
+        res.status(200).json({ task: result.rows[0] });
+    } catch (error) {
+        console.error('Eroare la actualizarea task-ului:', error);
+        res.status(500).json({ error: 'A apărut o eroare la salvarea modificării.' });
     }
 }
