@@ -18,7 +18,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         RETURNING id, name, email, role, created_at;
         `;
 
-        const values = [name, email, hashedPassword, role || 'Developer']
+        const values = [name, email, hashedPassword, role || 'NEALOCAT']
         const result = await pool.query(insertQuery, values)
         res.status(201).json({
             message: 'Utilizator creat cu succes!',
@@ -99,6 +99,36 @@ export const getUserProfile = async (req: AuthRequest, res: Response): Promise<v
     })
     }catch (error) {
         console.error('Eroare la obținerea profilului:', error);
+        res.status(500).json({ error: 'Eroare internă a serverului.' });
+    }
+}
+
+export const updateUserRole = async (req: AuthRequest, res: Response): Promise<void> => {
+    try{
+
+        const userId= req.user.userId
+        const {role} = req.body
+
+        if(!role){
+            res.status(400).json({ error: 'Te rugăm să selectezi un rol.' });
+            return;
+        }
+
+        const updateQuery = `
+            UPDATE users
+            SET role = $1
+            WHERE id = $2
+            RETURNING id,name,email,role
+        
+        `;
+        const result = await pool.query(updateQuery, [role, userId])
+
+        res.status(200).json({
+            message: 'Rolul a fost actualizat cu succes!',
+            user: result.rows[0]
+        })
+    }catch(error){
+        console.error('Eroare la actualizarea rolului:', error);
         res.status(500).json({ error: 'Eroare internă a serverului.' });
     }
 }

@@ -10,22 +10,35 @@ export const createProject = async (req: AuthRequest, res: Response): Promise<vo
     const userId = req.user.userId
 
     try{
-        const insertQuery = `
+        await pool.query('BEGIN')
+
+        const insertProjectQuery = `
             INSERT INTO projects (name, description, user_id)
             VALUES ($1, $2, $3)
             RETURNING *;
         
         `;
 
-        const values = [name, description, userId]
-        const result = await pool.query(insertQuery, values)
+        const projectValues = [name, description, userId]
+        const projectResult = await pool.query(insertProjectQuery, projectValues)
+        const newProject = projectResult.rows[0]
+
+        const insertMemberQuery = `
+            INSERT INTO project_members (project_id, user_id, role)
+            VALUES ($1, $2, 'OWNER');
+        `;
+
+        await pool.query(insertMemberQuery, [newProject.id, userId])
+
+        await pool.query('COMMIT')
 
         res.status(201).json({
             message: 'proiect creat cu succes!',
-            project: result.rows[0]
+            project: newProject
         })
 
     }catch (error){
+        await pool.query('ROLLBACK');
         console.error('Eroare la crearea proiectului:', error);
         res.status(500).json({ error: 'Eroare internă a serverului.' });
     }

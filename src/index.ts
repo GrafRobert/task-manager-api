@@ -5,7 +5,8 @@ import projectRouter from './routes/projectRoutes.js'
 import taskRouter from './routes/taskRoutes.js'
 
 const app = express()
-const port = 3000
+//const port = 3000
+const PORT = process.env.PORT || 3000
 
 app.use(cors())
 app.use(express.json())
@@ -19,6 +20,6 @@ app.get('/', (req, res) => {
 
 })
 
-app.listen(port, () => {
-    console.log(`Serverul rulează la adresa http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Serverul rulează la adresa http://localhost:${PORT}`);
 })
