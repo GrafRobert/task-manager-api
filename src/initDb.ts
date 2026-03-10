@@ -29,18 +29,42 @@ const createTables = async () => {
         status VARCHAR(50) DEFAULT 'TODO',
         priority VARCHAR(50) DEFAULT 'MEDIUM',
         project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
-        assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS project_members (
+        project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(20) DEFAULT 'MEMBER',
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (project_id, user_id)
+    
+    );
+
+    CREATE TABLE IF NOT EXISTS task_assignees (
+        task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        PRIMARY KEY (task_id, user_id)
+    
+    );
+
+    ALTER TABLE tasks DROP COLUMN IF EXISTS assigned_to;
+
+
+    INSERT INTO project_members (project_id, user_id, role)
+    SELECT id, user_id, 'OWNER' FROM projects
+    ON CONFLICT (project_id, user_id) DO NOTHING;
+
+
     `;
 
-    try {
-        console.log('Incercam crearea tabelelor...')
+  try {
+        console.log('Încercăm crearea și actualizarea tabelelor pentru colaborare...')
         await pool.query(createUsersTableQuery)
-        console.log('Tabelul "users" a fost creat cu succes (sau exista deja)!')
-    }catch (error){
-        console.error('Eroare la crearea tabelelor:', error);
-    }finally{
+        console.log('Baza de date a fost actualizată cu succes!')
+    } catch (error) {
+        console.error('Eroare la crearea/actualizarea tabelelor:', error);
+    } finally {
         pool.end()
     }
 }

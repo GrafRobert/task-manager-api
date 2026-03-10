@@ -1,5 +1,5 @@
 import express from 'express'
-import { createProject, getProjects } from '../controllers/projectController.js'
+import { createProject, getProjects , getProjectMembers, addMemberToProject} from '../controllers/projectController.js'
 import taskRoutes from './taskRoutes.js' 
 import { protectRoute } from '../middleware/authMiddleware.js'
 
@@ -10,6 +10,9 @@ router.use(protectRoute)
 
 router.post('/', createProject)
 router.get('/', getProjects)
+router.get('/:projectId/members', getProjectMembers)
+router.post('/:projectId/members', addMemberToProject)
+
 
 
 router.use('/:projectId/tasks', taskRoutes)
