@@ -8,7 +8,14 @@ const app = express()
 //const port = 3000
 const PORT = process.env.PORT || 3000
 
-app.use(cors())
+app.use(cors({
+  origin: [
+    'http://localhost:5173', 
+    'https://task-manager-ui-chi.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+}));
 app.use(express.json())
 
 app.use('/api/users', userRouter)
