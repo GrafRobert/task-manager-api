@@ -75,7 +75,7 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
         const { projectId, taskId } = req.params;
         
      
-        const { title, description, status, priority, assigned_to } = req.body;
+        const { title, description, status, priority, assigned_to, feedback} = req.body;
 
         
         const vechiResult = await pool.query(
@@ -96,13 +96,15 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
         const noulStatus = status !== undefined ? status : vechi.status;
         const nouaPriority = priority !== undefined ? priority : vechi.priority;
 
+        const noulFeedback = feedback !== undefined ? feedback : vechi.feedback
+
        
         const updateResult = await pool.query(
             `UPDATE tasks 
-             SET title = $1, description = $2, status = $3, priority = $4 
-             WHERE id = $5 AND project_id = $6 
+             SET title = $1, description = $2, status = $3, priority = $4, feedback = $5
+             WHERE id = $6 AND project_id = $7 
              RETURNING *`,
-            [noulTitle, nouaDescription, noulStatus, nouaPriority, taskId, projectId]
+            [noulTitle, nouaDescription, noulStatus, nouaPriority, noulFeedback, taskId, projectId]
         );
 
        

@@ -48,12 +48,24 @@ const createTables = async () => {
     
     );
 
+     CREATE TABLE task_reviews (
+        id SERIAL PRIMARY KEY,
+        task_id INTEGER NOT NULL REFERENCE tasks(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCE users(id),
+        review_text NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    
+    );
+
     ALTER TABLE tasks DROP COLUMN IF EXISTS assigned_to;
 
 
     INSERT INTO project_members (project_id, user_id, role)
     SELECT id, user_id, 'OWNER' FROM projects
     ON CONFLICT (project_id, user_id) DO NOTHING;
+
+
+   
 
 
     `;

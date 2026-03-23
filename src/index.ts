@@ -20,6 +20,11 @@ app.get('/', (req, res) => {
 
 })
 
-app.listen(PORT, () => {
-    console.log(`Serverul rulează la adresa http://localhost:${PORT}`);
-})
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Serverul rulează pe adresa http://localhost:${PORT}`);
+    });
+}
+
+export default app
