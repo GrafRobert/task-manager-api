@@ -54,4 +54,3 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Exportul magic pentru Vercel
 export default app;
-module.exports = app;
